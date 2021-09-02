@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Customer;
+use App\Models\{Country,State,City};
+
+
 
 class CustomersController extends Controller
 {
@@ -11,9 +15,22 @@ class CustomersController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    // Auth Middleware
+    
+     public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+
     public function index()
     {
+
         //
+        $customers = Customer::all();
+        return view('customers.index')->with('customers', $customers);
+
     }
 
     /**
@@ -24,6 +41,8 @@ class CustomersController extends Controller
     public function create()
     {
         //
+        $data['countries'] = Country::get(["name","id"]);
+        return view('customers.create' ,$data);
     }
 
     /**
@@ -34,7 +53,27 @@ class CustomersController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
+
+        $validated = $request->validate([
+            'name' => 'required',
+            'email' => 'required',
+            'phone' => 'required',
+         ]);
+        
+
+        $customer = new Customer;
+        $customer->name = $request->input('name');
+        $customer->address = $request->input('address');
+        $customer->phone_number = $request->input('phone');
+        $customer->email = $request->input('email');
+        $customer->city = $request->input('city');
+        $customer->state = $request->input('state');
+        $customer->country = $request->input('country');
+        $customer->save();
+
+        return redirect('/customers')->with('success','Customer added successfully');
+
     }
 
     /**
@@ -57,6 +96,11 @@ class CustomersController extends Controller
     public function edit($id)
     {
         //
+        $data['countries'] = Country::get(["name","id"]);
+        $data['customer'] = Customer::where('customer_id', $id)->first();
+
+        return view('customers.edit',$data);
+    
     }
 
     /**
@@ -69,6 +113,19 @@ class CustomersController extends Controller
     public function update(Request $request, $id)
     {
         //
+        
+        $customer = Customer::where('customer_id', $id)->first();
+        $customer->name = $request->input('name');
+        $customer->address = $request->input('address');
+        $customer->phone_number = $request->input('phone');
+        $customer->email = $request->input('email');
+        $customer->city = $request->input('city');
+        $customer->state = $request->input('state');
+        $customer->country = $request->input('country');
+        $customer->save();
+
+        return redirect('/customers')->with('success','Customer updated successfully');
+
     }
 
     /**
